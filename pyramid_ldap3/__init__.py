@@ -1,5 +1,5 @@
-
 import logging
+import re
 
 from time import time
 
@@ -242,10 +242,12 @@ class Connector(object):
         if search is None:
             raise ConfigurationError(
                 'set_ldap_groups_query was not called during setup')
+        login = re.match("^uid=(.*),.*$", userdn).groups()[0]
         with self.manager.connection() as conn:
             try:
                 result = search.execute(
-                    conn, userdn=escape_for_search(userdn))
+                    conn, userdn=escape_for_search(userdn),
+                    login=login)
             except LDAPException:
                 logger.debug(
                     'Exception in user_groups with userdn %r', userdn,
